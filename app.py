@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,8 +6,6 @@ import json
 import os
 
 app = FastAPI()
-
-# разрешаем запросы из Mini App
 
 app.add_middleware(
 CORSMiddleware,
@@ -18,20 +16,18 @@ allow_headers=["*"],
 )
 
 DATA_FILE = "storage.json"
-ITEMS_FILE = "items.json"
 
-def load_json(path):
-if not os.path.exists(path):
+def load_storage():
+if not os.path.exists(DATA_FILE):
 return {}
-with open(path, "r", encoding="utf-8") as f:
+with open(DATA_FILE, "r", encoding="utf-8") as f:
 return json.load(f)
 
-def save_json(path, data):
-with open(path, "w", encoding="utf-8") as f:
+def save_storage(data):
+with open(DATA_FILE, "w", encoding="utf-8") as f:
 json.dump(data, f, ensure_ascii=False)
 
-storage = load_json(DATA_FILE)
-items = load_json(ITEMS_FILE)
+storage = load_storage()
 
 class Item(BaseModel):
 name: str
@@ -46,15 +42,11 @@ items: List[Item]
 def root():
 return {"status": "API работает"}
 
-@app.get("/items")
-def get_items(group: str):
-return items.get(group, [])
-
 @app.post("/save")
 def save_data(data: SaveRequest):
 key = f"{data.user_id}_{data.group}"
 storage[key] = [item.dict() for item in data.items]
-save_json(DATA_FILE, storage)
+save_storage(storage)
 return {"status": "saved", "items": len(data.items)}
 
 @app.get("/data")
