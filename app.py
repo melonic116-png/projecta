@@ -7,8 +7,6 @@ import os
 
 app = FastAPI()
 
-# разрешаем запросы из Mini App
-
 app.add_middleware(
 CORSMiddleware,
 allow_origins=["*"],
